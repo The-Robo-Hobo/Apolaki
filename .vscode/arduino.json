@@ -1,0 +1,4 @@
+{
+    "board": "arduino:avr:uno",
+    "sketch": "src\\auto_dim_light\\auto_dim_light.ino"
+}
