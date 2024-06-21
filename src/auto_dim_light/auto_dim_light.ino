@@ -22,10 +22,12 @@ void setup() {
 
 
 void loop() {
-  if(digitalRead(CONTROL_PIN))
-    manual_relay();
-  else
-    smooth_blink();
+  // if(digitalRead(CONTROL_PIN))
+  //   manual_relay();
+  // else
+  //   smooth_blink();
+  smooth_blink(10);
+  // manual_relay();
   
   
 }
