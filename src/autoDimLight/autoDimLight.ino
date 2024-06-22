@@ -114,3 +114,32 @@ int getTime(const RtcDateTime& dt) {
     int intTime = atoi(time);
     return intTime;
 }
+
+int calculateLux(int time) {
+    /*
+    Return light intensity (lux) according to parameter time
+    time 50000 == starting to glow
+    time 120000 == highest lux
+    time 190000 == complete darkness
+    */ 
+}
+
+void setLux(int lux) {
+    /*
+    Set light intensity (lux) according to parameter lux
+    */
+}
+
+bool isSunRise(int time) {
+    /*
+    Returns boolean according to parameter time
+    time 53000 == true
+    else false
+    */
+}
+
+void setBuzzer(bool isSunRise) {
+    /*
+    Sounds the buzzer if parameter isSunRise is true
+    */
+}
