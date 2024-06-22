@@ -13,6 +13,8 @@ Install this library from Arduino Library Manager first
 ThreeWire myWire(4, 3, 2);        // DAT, CLK, RST
 RtcDS1302<ThreeWire> Rtc(myWire);
 
+// add pins here
+
 void setup () 
 {
     Serial.begin(9600);
@@ -41,7 +43,12 @@ void loop () {
     Serial.print("int time: ");
     Serial.println(time);
 
-    delay(5000); // five seconds
+    int lux = calculateLux(time);
+    setLux(lux);
+    bool sunrise = isSunRise(time);
+    setBuzzer(sunrise);
+
+    delay(5000);        // five seconds
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
