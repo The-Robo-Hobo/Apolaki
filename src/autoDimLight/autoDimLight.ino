@@ -14,6 +14,7 @@ ThreeWire myWire(4, 3, 2);        // DAT, CLK, RST
 RtcDS1302<ThreeWire> Rtc(myWire);
 
 // add pins here
+const int PIN_FLASH_LED;
 
 void setup () 
 {
@@ -25,6 +26,8 @@ void setup ()
 
     Rtc.Begin();
     setTime();
+
+    // pin setups here
 }
 
 void loop () {
@@ -122,31 +125,48 @@ int getTime(const RtcDateTime& dt) {
     return intTime;
 }
 
+/**
+ * Calculate light intensity (lux) value from time
+ * 
+ * Examples: 
+ *  time 50000 == starting to glow
+ *  time 120000 == highest lux
+ *  time 190000 == complete darkness
+ * 
+ * @param time value y
+ * @return lux percentage value (light intensity) from 0 to 100
+ */
 int calculateLux(int time) {
-    /*
-    Return light intensity (lux) according to parameter time
-    time 50000 == starting to glow
-    time 120000 == highest lux
-    time 190000 == complete darkness
-    */ 
+    int lux;
+    return lux;
 }
 
+/**
+ * Set light intensity (lux) of flash LED 
+ * 
+ * @param lux
+ */
 void setLux(int lux) {
-    /*
-    Set light intensity (lux) according to parameter lux
-    */
+
 }
 
+/**
+ * Determine if sun is risen or not
+ * 
+ * Example:
+ *  time 53000 == true
+ *  else false
+ * 
+ * @param time
+ * @return boolean value
+ */
 bool isSunRise(int time) {
-    /*
-    Returns boolean according to parameter time
-    time 53000 == true
-    else false
-    */
+
 }
 
+/**
+ * Activates the buzzer if the sun is risen
+ */
 void setBuzzer(bool isSunRise) {
-    /*
-    Sounds the buzzer if parameter isSunRise is true
-    */
+    
 }
