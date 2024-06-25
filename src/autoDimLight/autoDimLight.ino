@@ -138,6 +138,35 @@ int getTime(const RtcDateTime& dt) {
  */
 int calculateLux(int time) {
     int lux;
+    
+    /*
+    String strTime = String(time);
+    if (strTime.length() == 4) {
+        strTime = "00" + strTime;
+    } else if (strTime.length() == 5) {
+        strTime = "0" + strTime;
+    }
+    int hour = strTime.substring(0, 2).toInt();
+    int minute = strTime.substring(2, 4).toInt();
+    int second = strTime.substring(4).toInt();
+    */
+
+    if (50000 < time < 120000) {        // morning
+        lux = int(map(time, 50000, 120000, 0, 100));
+        // if (time % 10000 == 3) {        // look if half hour (examples: 5:30, 12:30, 15:30)
+        //     lux += 1;
+        // }
+    } else if (time == 120000) {        // noon
+        lux = 100;
+    } else if (120000 < time < 190000){     // afternoon
+        lux = int(map(time, 120000, 190000, 100, 0));
+        // if (time % 10000 == 3) {        // look if half hour
+        //     lux -= 1;
+        // }
+    } else {
+        lux = 0;
+    }
+    
     return lux;
 }
 
