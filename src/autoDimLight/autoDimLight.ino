@@ -18,7 +18,7 @@ RtcDS1302<ThreeWire> Rtc(myWire);
 const int PIN_FLASH_LED;
 
 void setup () {
-    Serial.begin(115200);
+    Serial.begin(9600);
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
@@ -42,13 +42,14 @@ void loop () {
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    // int time = getTime(now);
+    // for testing purposes
     Serial.println("enter time: ");
     while (!Serial.available()) {}
-    int time = Serial.parseInt();
+    long time = Serial.parseInt();
     Serial.print("entered: ");
-    Serial.println(time);
+    Serial.println(time, DEC);
 
+    // int time = getTime(now);
     int lux = calculateLux(time);
     setLux(lux);
     bool sunrise = isSunRise(time);
@@ -111,9 +112,9 @@ void setTime() {
     }
 }
 
-int getTime(const RtcDateTime& dt) {
+long getTime(const RtcDateTime& dt) {
     // for getting the current time
-    char time[8];
+    char time[6];
 
     snprintf_P(time, 
             countof(time),
@@ -124,11 +125,11 @@ int getTime(const RtcDateTime& dt) {
     Serial.print("char time: ");
     Serial.println(time);
 
-    int intTime = atoi(time);
+    long longTime = atoi(time);
     Serial.print("int time: ");
-    Serial.println(time);
+    Serial.println(longTime);
     
-    return intTime;
+    return longTime;
 }
 
 /**
@@ -139,42 +140,23 @@ int getTime(const RtcDateTime& dt) {
  *  time 120000 == highest lux
  *  time 190000 == complete darkness
  * 
- * @param time value y
- * @return lux percentage value (light intensity) from 0 to 100
+ * @param time long value
+ * @return lux percentage value (light intensity) from 0 to 1023
  */
-int calculateLux(int time) {
+int calculateLux(long time) {
+    long sunrise = 50000;
+    long noon = 120000;
+    long sunset = 190000;
     int lux;
-    
-    // String strTime = String(timeb);
-    // if (strTime.length() == 4) {
-    //     strTime = "00" + strTime;
-    // } else if (strTime.length() == 5) {
-    //     strTime = "0" + strTime;
-    // }
-    // int hour = strTime.substring(0, 2).toInt();
-    // int minute = strTime.substring(2, 4).toInt();
-    // int second = strTime.substring(4).toInt();
-
-    // hour = hour * 10000;
-    // minute = minute * 100;
-    // second = second * 1;
-    // int time = hour + minute + second;
-    // Serial.print("time: ");
-    // Serial.println(time);
-
-    int sunrise = 50000;
-    int noon = 120000;
-    int sunset = 190000;
-    
     int minLux = 1;
-    int maxLux = 15;
+    int maxLux = 1023;
 
-    if ((sunrise < time) && (time < noon)) {        // morning
+    if ((sunrise < time < noon)) {        // morning
         lux = map(time, sunrise, noon, minLux, maxLux);
         lux = int(lux);
-    } else if (time == noon) {        // noon
+    } else if (time == noon) {      // noon
         lux = maxLux;
-    } else if ((noon < time) && (time < sunset)) {     // afternoon
+    } else if (noon < time < sunset) {      // afternoon
         lux = map(time, noon, sunset, maxLux, minLux);
         lux = int(lux);
     } else {
