@@ -3,6 +3,7 @@ Library: Rtc by Makuna
 Install this library from Arduino Library Manager first
 */
 
+#include <stdlib.h>
 #include <RtcDS1302.h>
 #include <ThreeWire.h>
 
@@ -16,9 +17,8 @@ RtcDS1302<ThreeWire> Rtc(myWire);
 // add pins here
 const int PIN_FLASH_LED;
 
-void setup () 
-{
-    Serial.begin(9600);
+void setup () {
+    Serial.begin(115200);
 
     Serial.print("compiled: ");
     Serial.print(__DATE__);
@@ -42,8 +42,11 @@ void loop () {
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    int time = getTime(now);
-    Serial.print("int time: ");
+    // int time = getTime(now);
+    Serial.println("enter time: ");
+    while (!Serial.available()) {}
+    int time = Serial.parseInt();
+    Serial.print("entered: ");
     Serial.println(time);
 
     int lux = calculateLux(time);
@@ -122,6 +125,9 @@ int getTime(const RtcDateTime& dt) {
     Serial.println(time);
 
     int intTime = atoi(time);
+    Serial.print("int time: ");
+    Serial.println(time);
+    
     return intTime;
 }
 
@@ -139,33 +145,44 @@ int getTime(const RtcDateTime& dt) {
 int calculateLux(int time) {
     int lux;
     
-    /*
-    String strTime = String(time);
-    if (strTime.length() == 4) {
-        strTime = "00" + strTime;
-    } else if (strTime.length() == 5) {
-        strTime = "0" + strTime;
-    }
-    int hour = strTime.substring(0, 2).toInt();
-    int minute = strTime.substring(2, 4).toInt();
-    int second = strTime.substring(4).toInt();
-    */
+    // String strTime = String(timeb);
+    // if (strTime.length() == 4) {
+    //     strTime = "00" + strTime;
+    // } else if (strTime.length() == 5) {
+    //     strTime = "0" + strTime;
+    // }
+    // int hour = strTime.substring(0, 2).toInt();
+    // int minute = strTime.substring(2, 4).toInt();
+    // int second = strTime.substring(4).toInt();
 
-    if (50000 < time < 120000) {        // morning
-        lux = int(map(time, 50000, 120000, 0, 100));
-        // if (time % 10000 == 3) {        // look if half hour (examples: 5:30, 12:30, 15:30)
-        //     lux += 1;
-        // }
-    } else if (time == 120000) {        // noon
-        lux = 100;
-    } else if (120000 < time < 190000){     // afternoon
-        lux = int(map(time, 120000, 190000, 100, 0));
-        // if (time % 10000 == 3) {        // look if half hour
-        //     lux -= 1;
-        // }
+    // hour = hour * 10000;
+    // minute = minute * 100;
+    // second = second * 1;
+    // int time = hour + minute + second;
+    // Serial.print("time: ");
+    // Serial.println(time);
+
+    int sunrise = 50000;
+    int noon = 120000;
+    int sunset = 190000;
+    
+    int minLux = 1;
+    int maxLux = 15;
+
+    if ((sunrise < time) && (time < noon)) {        // morning
+        lux = map(time, sunrise, noon, minLux, maxLux);
+        lux = int(lux);
+    } else if (time == noon) {        // noon
+        lux = maxLux;
+    } else if ((noon < time) && (time < sunset)) {     // afternoon
+        lux = map(time, noon, sunset, maxLux, minLux);
+        lux = int(lux);
     } else {
         lux = 0;
     }
+
+    Serial.print("lux: ");
+    Serial.println(lux);
     
     return lux;
 }
@@ -174,6 +191,7 @@ int calculateLux(int time) {
  * Set light intensity (lux) of flash LED 
  * 
  * @param lux
+ * @return value 0 to 1023
  */
 void setLux(int lux) {
 
