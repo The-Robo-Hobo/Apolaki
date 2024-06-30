@@ -7,15 +7,15 @@ Install this library from Arduino Library Manager first
 #include <RtcDS1302.h>
 #include <ThreeWire.h>
 
-#define PIN_DAT = 4     // blue wire
-#define PIN_CLK = 3     // purple wire
-#define PIN_RST = 2     // gray wire
+#define PIN_DAT 4     // blue wire
+#define PIN_CLK 3     // purple wire
+#define PIN_RST 2     // gray wire
 
-ThreeWire myWire(4, 3, 2);        // DAT, CLK, RST
+ThreeWire myWire(PIN_DAT, PIN_CLK, PIN_RST);        // DAT, CLK, RST
 RtcDS1302<ThreeWire> Rtc(myWire);
 
 // add pins here
-const int PIN_FLASH_LED;
+#define PIN_FLASH_LED 5;
 
 void setup () {
     Serial.begin(9600);
