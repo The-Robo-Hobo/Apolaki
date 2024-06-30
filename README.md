@@ -5,6 +5,10 @@ A final project for CMPE Embedded System
 
 ## Development Device Configuration
 
+### For adding user to dialout group
+
+`sudo adduser <username> dialout`
+
 ### For resolving avrdude error
 
 specific error: `avrdude: stk500_recv() programmer is not responding`

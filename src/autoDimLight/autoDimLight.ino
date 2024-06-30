@@ -3,20 +3,21 @@ Library: Rtc by Makuna
 Install this library from Arduino Library Manager first
 */
 
+#include <stdlib.h>
 #include <RtcDS1302.h>
 #include <ThreeWire.h>
 
-#define PIN_DAT = 4     // blue wire
-#define PIN_CLK = 3     // purple wire
-#define PIN_RST = 2     // gray wire
+#define PIN_DAT 4     // blue wire
+#define PIN_CLK 3     // purple wire
+#define PIN_RST 2     // gray wire
 
-ThreeWire myWire(4, 3, 2);        // DAT, CLK, RST
+ThreeWire myWire(PIN_DAT, PIN_CLK, PIN_RST);        // DAT, CLK, RST
 RtcDS1302<ThreeWire> Rtc(myWire);
 
 // add pins here
+#define PIN_FLASH_LED 5;
 
-void setup () 
-{
+void setup () {
     Serial.begin(9600);
 
     Serial.print("compiled: ");
@@ -25,6 +26,8 @@ void setup ()
 
     Rtc.Begin();
     setTime();
+
+    // pin setups here
 }
 
 void loop () {
@@ -39,10 +42,14 @@ void loop () {
         Serial.println("RTC lost confidence in the DateTime!");
     }
 
-    int time = getTime(now);
-    Serial.print("int time: ");
-    Serial.println(time);
+    // for testing purposes
+    Serial.println("enter time: ");
+    while (!Serial.available()) {}
+    long time = Serial.parseInt();
+    Serial.print("entered: ");
+    Serial.println(time, DEC);
 
+    // int time = getTime(now);
     int lux = calculateLux(time);
     setLux(lux);
     bool sunrise = isSunRise(time);
@@ -105,9 +112,9 @@ void setTime() {
     }
 }
 
-int getTime(const RtcDateTime& dt) {
+long getTime(const RtcDateTime& dt) {
     // for getting the current time
-    char time[8];
+    char time[6];
 
     snprintf_P(time, 
             countof(time),
@@ -118,35 +125,77 @@ int getTime(const RtcDateTime& dt) {
     Serial.print("char time: ");
     Serial.println(time);
 
-    int intTime = atoi(time);
-    return intTime;
+    long longTime = atoi(time);
+    Serial.print("int time: ");
+    Serial.println(longTime);
+    
+    return longTime;
 }
 
-int calculateLux(int time) {
-    /*
-    Return light intensity (lux) according to parameter time
-    time 50000 == starting to glow
-    time 120000 == highest lux
-    time 190000 == complete darkness
-    */ 
+/**
+ * Calculate light intensity (lux) value from time
+ * 
+ * Examples: 
+ *  time 50000 == starting to glow
+ *  time 120000 == highest lux
+ *  time 190000 == complete darkness
+ * 
+ * @param time long value
+ * @return lux percentage value (light intensity) from 0 to 1023
+ */
+int calculateLux(long time) {
+    long sunrise = 50000;
+    long noon = 120000;
+    long sunset = 190000;
+    int lux;
+    int minLux = 1;
+    int maxLux = 1023;
+
+    if ((sunrise < time < noon)) {        // morning
+        lux = map(time, sunrise, noon, minLux, maxLux);
+        lux = int(lux);
+    } else if (time == noon) {      // noon
+        lux = maxLux;
+    } else if (noon < time < sunset) {      // afternoon
+        lux = map(time, noon, sunset, maxLux, minLux);
+        lux = int(lux);
+    } else {
+        lux = 0;
+    }
+
+    Serial.print("lux: ");
+    Serial.println(lux);
+    
+    return lux;
 }
 
+/**
+ * Set light intensity (lux) of flash LED 
+ * 
+ * @param lux
+ * @return value 0 to 1023
+ */
 void setLux(int lux) {
-    /*
-    Set light intensity (lux) according to parameter lux
-    */
+
 }
 
+/**
+ * Determine if sun is risen or not
+ * 
+ * Example:
+ *  time 53000 == true
+ *  else false
+ * 
+ * @param time
+ * @return boolean value
+ */
 bool isSunRise(int time) {
-    /*
-    Returns boolean according to parameter time
-    time 53000 == true
-    else false
-    */
+
 }
 
+/**
+ * Activates the buzzer if the sun is risen
+ */
 void setBuzzer(bool isSunRise) {
-    /*
-    Sounds the buzzer if parameter isSunRise is true
-    */
+    
 }
