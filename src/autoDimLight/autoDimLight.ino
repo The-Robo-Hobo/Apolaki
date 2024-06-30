@@ -16,6 +16,7 @@ RtcDS1302<ThreeWire> Rtc(myWire);
 
 // add pins here
 #define PIN_FLASH_LED 5;
+#define PIN_BUZZER 6;
 
 void setup () {
     Serial.begin(9600);
@@ -197,5 +198,14 @@ bool isSunRise(int time) {
  * Activates the buzzer if the sun is risen
  */
 void setBuzzer(bool isSunRise) {
-    
+    if (isSunRise) {
+        for (int i = 0; i < 10; i++) {  // repeat 10 times ?? 
+            tone(PIN_BUZZER, 1000);     // frequency of 1000Hz
+            delay(500);                 // sound 500ms
+            noTone(PIN_BUZZER);
+            delay(250);                 // pause 250ms
+        }
+    } else {
+        noTone(PIN_BUZZER);
+    }
 }
