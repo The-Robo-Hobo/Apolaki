@@ -3,7 +3,7 @@
 Apolaki: A Time-Based Auto-Dimming Room Light  
 A final project for CMPE Embedded System
 
-Apolaki, from the Filipino Mythodology (Tagalog and Pangasinan Regions), is the God of the Sun and Patron of Warriors.  
+Apolaki, from the Mythology of Tagalog and Pangasinan Regions, is the God of the Sun and Patron of Warriors.  
 source: [Apolaki: God of the Sun](https://thephilippinestoday.com/apolaki-god-of-the-sun-patron-of-warriors/)
 
 ## Development Device Configuration
