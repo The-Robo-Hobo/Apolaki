@@ -17,6 +17,13 @@ RtcDS1302<ThreeWire> Rtc(myWire);
 // add pins here
 #define PIN_FLASH_LED 5
 #define PIN_BUZZER 6
+#define ANALOG_PIN A0
+
+// global variables
+long time;
+unsigned long prevMillis = 0;
+const long INTERVAL = 5000; // 5 seconds async delay
+
 
 void setup () {
     Serial.begin(9600);
@@ -29,10 +36,13 @@ void setup () {
     setTime();
 
     // pin setups here
+    time = 49500;
     pinMode(PIN_BUZZER, OUTPUT);
 }
 
 void loop () {
+    unsigned long currentMillis = millis();
+
     RtcDateTime now = Rtc.GetDateTime();
 
     printDateTime(now);
@@ -42,22 +52,36 @@ void loop () {
         // Common Causes:
         //    1) the battery on the device is low or even missing and the power line was disconnected
         Serial.println("RTC lost confidence in the DateTime!");
+    } else {
+        // updates time every 5 seconds
+        if (currentMillis - prevMillis >= INTERVAL){
+            prevMillis = currentMillis;
+            // time = getTime(now);        // get current time
+
+            // for testing purposes
+            // Serial.println("enter time: ");
+            // while (!Serial.available()) {}
+            // time = Serial.parseInt();
+            // Serial.print("entered: ");
+            // Serial.println(time, DEC);
+            time += 1000;
+            if (time == 192000) {
+                time = 49500;
+            }
+        }
+        Serial.print("time: ");
+        Serial.println(time);
+
+        // maps time to analogWrite range (0-255)
+        long lux = calculateLux(time);
+
+        // lux brightness based on time
+        float luxMultiplier = (analogRead(ANALOG_PIN) / 1023.0);
+        setLux(lux, luxMultiplier);
+
+        bool sunrise = isSunRise(time);
+        setBuzzer(sunrise);
     }
-
-    // for testing purposes
-    Serial.println("enter time: ");
-    while (!Serial.available()) {}
-    long time = Serial.parseInt();
-    Serial.print("entered: ");
-    Serial.println(time, DEC);
-
-    // int time = getTime(now);
-    int lux = calculateLux(time);
-    setLux(lux);
-    bool sunrise = isSunRise(time);
-    setBuzzer(sunrise);
-
-    delay(5000);        // five seconds
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
@@ -116,7 +140,7 @@ void setTime() {
 
 long getTime(const RtcDateTime& dt) {
     // for getting the current time
-    char time[6];
+    char time[8];
 
     snprintf_P(time, 
             countof(time),
@@ -127,8 +151,8 @@ long getTime(const RtcDateTime& dt) {
     Serial.print("char time: ");
     Serial.println(time);
 
-    long longTime = atoi(time);
-    Serial.print("int time: ");
+    long longTime = atol(time);
+    Serial.print("long time: ");
     Serial.println(longTime);
     
     return longTime;
@@ -143,24 +167,22 @@ long getTime(const RtcDateTime& dt) {
  *  time 190000 == complete darkness
  * 
  * @param time long value
- * @return lux percentage value (light intensity) from 0 to 1023
+ * @return lux percentage value (light intensity) from 0 to 255
  */
-int calculateLux(long time) {
+long calculateLux(long time) {
     long sunrise = 50000;
     long noon = 120000;
     long sunset = 190000;
-    int lux;
-    int minLux = 1;
-    int maxLux = 1023;
+    long lux;
+    long minLux = 1;
+    long maxLux = 255;
 
-    if ((sunrise < time < noon)) {        // morning
+    if ((sunrise < time) && (time < noon)) {        // morning
         lux = map(time, sunrise, noon, minLux, maxLux);
-        lux = int(lux);
     } else if (time == noon) {      // noon
         lux = maxLux;
-    } else if (noon < time < sunset) {      // afternoon
+    } else if ((noon < time) && (time < sunset)) {      // afternoon
         lux = map(time, noon, sunset, maxLux, minLux);
-        lux = int(lux);
     } else {
         lux = 0;
     }
@@ -175,10 +197,15 @@ int calculateLux(long time) {
  * Set light intensity (lux) of flash LED 
  * 
  * @param lux
- * @return value 0 to 1023
+ * @return None
  */
-void setLux(int lux) {
-
+void setLux(long lux, float multiplier) {
+    float luxValFloat = (lux * multiplier) + 0.5;   // 0.5 is used for rounding operations
+    int luxVal = int(luxValFloat);                  // using int() to float variable floors it
+    analogWrite(PIN_FLASH_LED, luxVal);
+    
+    Serial.print("luxVal: ");
+    Serial.println(luxVal);
 }
 
 /**
@@ -213,4 +240,17 @@ void setBuzzer(bool isSunRise) {
     } else {
         noTone(PIN_BUZZER);
     }
+}
+
+/**
+ * Potentiometer multiplier for max lux.
+ * 
+ * @param analogVal
+ * @return value 0.01 to 1.00
+ */
+float potentionMultiplier(int analogVal){
+    float multiplier = (analogVal / 1023);
+    Serial.print("analog readings from function: ");
+    Serial.println(multiplier);
+    return multiplier;
 }
