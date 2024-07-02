@@ -35,6 +35,7 @@ void setup () {
     setTime();
 
     // pin setups here
+    time = 49500;
 }
 
 void loop () {
@@ -49,36 +50,36 @@ void loop () {
         // Common Causes:
         //    1) the battery on the device is low or even missing and the power line was disconnected
         Serial.println("RTC lost confidence in the DateTime!");
+    } else {
+        // updates time every 5 seconds
+        if (currentMillis - prevMillis >= INTERVAL){
+            prevMillis = currentMillis;
+            // time = getTime(now);        // get current time
+
+            // for testing purposes
+            // Serial.println("enter time: ");
+            // while (!Serial.available()) {}
+            // time = Serial.parseInt();
+            // Serial.print("entered: ");
+            // Serial.println(time, DEC);
+            time += 1000;
+            if (time == 192000) {
+                time = 49500;
+            }
+        }
+        Serial.print("time: ");
+        Serial.println(time);
+
+        // maps time to analogWrite range (0-255)
+        long lux = calculateLux(time);
+
+        // lux brightness based on time
+        float luxMultiplier = (analogRead(ANALOG_PIN) / 1023.0);
+        setLux(lux, luxMultiplier);
+
+        bool sunrise = isSunRise(time);
+        setBuzzer(sunrise);
     }
-
-    // for testing purposes
-    /*
-    Serial.println("enter time: ");
-    while (!Serial.available()) {}
-    long time = Serial.parseInt();
-    Serial.print("entered: ");
-    Serial.println(time, DEC);
-    */
-    
-    // updates time every 5 seconds
-    if (currentMillis - prevMillis >= INTERVAL){
-        prevMillis = currentMillis;
-
-        // get current time
-        time = getTime(now);
-    }
-
-    // maps time to analogWrite range (0-255)
-    long lux = calculateLux(time);
-
-    // lux brightness based on time
-    float luxMultiplier = (analogRead(ANALOG_PIN) / 1023.0);
-    setLux(lux, luxMultiplier);
-
-    bool sunrise = isSunRise(time);
-    setBuzzer(sunrise);
-
-    // delay(5000);        // five seconds
 }
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
@@ -200,6 +201,9 @@ void setLux(long lux, float multiplier) {
     float luxValFloat = (lux * multiplier) + 0.5;   // 0.5 is used for rounding operations
     int luxVal = int(luxValFloat);                  // using int() to float variable floors it
     analogWrite(PIN_FLASH_LED, luxVal);
+    
+    Serial.print("luxVal: ");
+    Serial.println(luxVal);
 }
 
 /**
@@ -233,5 +237,5 @@ float potentionMultiplier(int analogVal){
     float multiplier = (analogVal / 1023);
     Serial.print("analog readings from function: ");
     Serial.println(multiplier);
-    return (multiplier);
+    return multiplier;
 }
