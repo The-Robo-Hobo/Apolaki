@@ -192,7 +192,11 @@ void setLux(int lux) {
  * @return boolean value
  */
 bool isSunRise(int time) {
-
+    if (53000 < time < 53100) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
