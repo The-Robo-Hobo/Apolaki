@@ -15,8 +15,8 @@ ThreeWire myWire(PIN_DAT, PIN_CLK, PIN_RST);        // DAT, CLK, RST
 RtcDS1302<ThreeWire> Rtc(myWire);
 
 // add pins here
-#define PIN_FLASH_LED 5;
-#define PIN_BUZZER 6;
+#define PIN_FLASH_LED 5
+#define PIN_BUZZER 6
 
 void setup () {
     Serial.begin(9600);
@@ -29,6 +29,7 @@ void setup () {
     setTime();
 
     // pin setups here
+    pinMode(PIN_BUZZER, OUTPUT);
 }
 
 void loop () {
