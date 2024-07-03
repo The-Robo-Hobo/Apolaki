@@ -36,7 +36,6 @@ void setup () {
     setTime();
 
     // pin setups here
-    time = 49500;
     pinMode(PIN_BUZZER, OUTPUT);
 }
 
@@ -45,8 +44,8 @@ void loop () {
 
     RtcDateTime now = Rtc.GetDateTime();
 
-    printDateTime(now);
-    Serial.println();
+    // printDateTime(now);
+    // Serial.println();
 
     if (!now.IsValid()) {
         // Common Causes:
@@ -56,28 +55,18 @@ void loop () {
         // updates time every 5 seconds
         if (currentMillis - prevMillis >= INTERVAL){
             prevMillis = currentMillis;
-            // time = getTime(now);        // get current time
-
-            // for testing purposes
-            // Serial.println("enter time: ");
-            // while (!Serial.available()) {}
-            // time = Serial.parseInt();
-            // Serial.print("entered: ");
-            // Serial.println(time, DEC);
-            time += 1000;
-            if (time == 192000) {
-                time = 49500;
-            }
+            time = getTime(now);        // get current time
         }
-        Serial.print("time: ");
-        Serial.println(time);
 
         // maps time to analogWrite range (0-255)
         long lux = calculateLux(time);
 
         // lux brightness based on time
         float luxMultiplier = (analogRead(ANALOG_PIN) / 1023.0);
+
         setLux(lux, luxMultiplier);
+
+        dataMonitoring(time, lux, luxMultiplier);
 
         bool sunrise = isSunRise(time);
         setBuzzer(sunrise);
@@ -187,8 +176,8 @@ long calculateLux(long time) {
         lux = 0;
     }
 
-    Serial.print("lux: ");
-    Serial.println(lux);
+    // Serial.print("lux:\t");
+    // Serial.println(lux);
     
     return lux;
 }
@@ -204,8 +193,8 @@ void setLux(long lux, float multiplier) {
     int luxVal = int(luxValFloat);                  // using int() to float variable floors it
     analogWrite(PIN_FLASH_LED, luxVal);
     
-    Serial.print("luxVal: ");
-    Serial.println(luxVal);
+    // Serial.print("luxVal:\t");
+    // Serial.println(luxVal);
 }
 
 /**
@@ -219,7 +208,7 @@ void setLux(long lux, float multiplier) {
  * @return boolean value
  */
 bool isSunRise(long time) {
-    if ((53000 <= time) && (time <= 53100)) {
+    if ((53000 <= time) && (time < 53100)) {
         return true;
     } else {
         return false;
@@ -227,7 +216,7 @@ bool isSunRise(long time) {
 }
 
 /**
- * Activates the buzzer if the sun is risen
+ * Activates the buzzer if the sun is risen.
  */
 void setBuzzer(bool isSunRise) {
     if (isSunRise) {
@@ -243,14 +232,17 @@ void setBuzzer(bool isSunRise) {
 }
 
 /**
- * Potentiometer multiplier for max lux.
- * 
- * @param analogVal
- * @return value 0.01 to 1.00
+ * Prints data to serial monitoring.
+ * @param time time in long format
+ * @param lux brightness intensity if LED
+ * @param multiplier multiplier value for lux
  */
-float potentionMultiplier(int analogVal){
-    float multiplier = (analogVal / 1023);
-    Serial.print("analog readings from function: ");
+void dataMonitoring(long time, long lux, float multiplier){
+    Serial.print("time:\t\t");
+    Serial.println(time);
+    Serial.print("lux:\t\t");
+    Serial.println(lux);
+    Serial.print("multiplier:\t");
     Serial.println(multiplier);
-    return multiplier;
+    Serial.println("");
 }
